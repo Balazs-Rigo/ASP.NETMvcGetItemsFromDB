@@ -1,27 +1,35 @@
 using ASP.NetMVC.GetItemsFromDB.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using System.Diagnostics;
 
 namespace ASP.NetMVC.GetItemsFromDB.Controllers
 {
     public class HomeController : Controller
-    {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+    {        
+        public IActionResult Index(string search)
         {
-            _logger = logger;
-        }
+            if (string.IsNullOrEmpty(search))
+                search = "varicose";
 
-        public IActionResult Index()
-        {
-            return View();
-        }
+            var comment = new Comment();  
+            var comments = new List<Comment>();
 
-        public IActionResult GetComments()
-        {
-            return View();
-        }
+            string queryComments = $"SELECT [Comment] FROM [Youtube].[dbo].[Comments] WHERE Comment LIKE '%{search}%'";
+
+            using SqlConnection con = new("Data Source=.;Initial Catalog=Youtube; Integrated Security=True;Trust Server Certificate=True");
+
+            using SqlCommand cmd = new SqlCommand(queryComments, con);
+            con.Open();
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                comments.Add(new Comment() { Text = reader.GetString(0) });              
+            }
+            con.Close();          
+
+            return View(comments);
+        }  
 
         public IActionResult Privacy()
         {
