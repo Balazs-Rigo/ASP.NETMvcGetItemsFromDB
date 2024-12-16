@@ -2,6 +2,7 @@ using ASP.NetMVC.GetItemsFromDB.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Diagnostics;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ASP.NetMVC.GetItemsFromDB.Controllers
 {
@@ -15,18 +16,23 @@ namespace ASP.NetMVC.GetItemsFromDB.Controllers
             var comment = new Comment();  
             var comments = new List<Comment>();
 
-            string queryComments = $"SELECT [Comment] FROM [Youtube].[dbo].[Comments] WHERE Comment LIKE '%{search}%'";
+            string queryComments = $"SELECT v.Video, c.Comment " +
+                $"FROM [Youtube].[dbo].[Comments] c " +
+                $"inner join [Youtube].[dbo].[videos] v " +
+                $"on v.Id = c.Id WHERE Comment LIKE '%{search}%'";
 
-            using SqlConnection con = new("Data Source=.;Initial Catalog=Youtube; Integrated Security=True;Trust Server Certificate=True");
+            using SqlConnection con = new("Data Source=.;Initial Catalog=Youtube; Integrated Security=True;TrustServerCertificate=true");
 
             using SqlCommand cmd = new SqlCommand(queryComments, con);
             con.Open();
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                comments.Add(new Comment() { Text = reader.GetString(0) });              
+                comments.Add(new Comment() { Text = reader.GetString(0) + @"\r\n" + reader.GetString(1) });              
             }
-            con.Close();          
+            con.Close();
+
+            ViewBag.Comments = comments.Count;
 
             return View(comments);
         }  

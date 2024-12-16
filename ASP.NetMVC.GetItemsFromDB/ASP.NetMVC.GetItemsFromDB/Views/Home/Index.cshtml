@@ -3,7 +3,7 @@
 @{
     ViewBag.Title = "Index";
 }
-<div style="font-family:Arial">
+<div >
     <h2>Employee List</h2>
     <p>
         @using (@Html.BeginForm("Index", "Home", FormMethod.Get))
@@ -11,6 +11,7 @@
             @Html.TextBox("search") <input type="submit" value="search" />
         }
     </p>
+    <label>Comments Count: @ViewBag.Comments</label>
     <table border="1" class="table table-striped">
         <tr>            
             <th>
